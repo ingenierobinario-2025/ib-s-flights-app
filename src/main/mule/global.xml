@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	
+	 <http:listener-config name="american-flights-api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="american-flights-api-config" api="resource::e545bf2e-58bf-46cd-bbfa-489b76d59242:ib-s-flights-api:2.0.3:raml:zip:american-flights-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="0f66de43-0c0c-4117-8821-3e9cfef1cbf6" >
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${secure::db.password}" database="${db.database}" />
+	</db:config>
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="6910812f-69e6-4d2c-b240-cb01f2da5758" >
+		<wsc:connection wsdlLocation="http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL" service="CountryInfoService" port="CountryInfoServiceSoap" address="http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso" >
+			<wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
+		</wsc:connection>
+	</wsc:config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="81dd7e71-c971-47ed-8c30-e8aa9bf4d519" >
+		<vm:queues >
+			<vm:queue queueName="currencyFlight" />
+		</vm:queues>
+	</vm:config>
+	<configuration doc:name="Configuration" doc:id="37b6c430-5d68-4842-84f6-d2ad8c90888a" defaultErrorHandler-ref="errorError_Handler" />
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="3df237fd-e14f-470b-bdb9-42ba824dc0a6" />
+	<os:config name="ObjectStore_Config" doc:name="ObjectStore Config" doc:id="05d0550a-8ab3-4423-a749-465a8cff1ca6" />
+	<os:object-store name="flightIndex" doc:name="Object store" doc:id="40ecab37-bed5-4b5a-8eb5-1ed4609ac630" config-ref="ObjectStore_Config" />
+	<file:config name="File_Config" doc:name="File Config" doc:id="4f0791a1-dbe3-4f2b-a243-86fd1c48c662" />
+	<configuration-properties doc:name="Configuration properties" doc:id="0bb734d5-9880-4658-bb09-3ffa579ec89d" file="config/${env}-properties.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="af886d46-f461-4f33-b6c4-d98c27f42bc7" file="config/${env}-properties.yaml" key="${keySecret}">
+	<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+</mule>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="errorError_Handler" doc:id="73468919-b2bd-46f7-88c8-557596114bdf" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="fd04f573-1564-4b54-b87f-4dd24736944f" type="ANY">
+			<logger level="ERROR" doc:name="Error trying to execute event" doc:id="6f2de4d5-a0d2-4bfd-8ebd-980b1391584e" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "Error trying to execute event",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	},&#10;	error: error&#10;		&#10;}]' />
+			<ee:transform doc:name="error response" doc:id="785101f8-72e1-4a66-acaa-934e825304da" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Error trying to execute event",
+	httpStatus: 500,
+	correlationId: vars.varInitialData.correlationId,
+	source: vars.varInitialData.source,
+	error: {
+		description: error.description,
+		namespace: error.errorType.namespace,
+		identifier: error.errorType.identifier
+	}
+		
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>

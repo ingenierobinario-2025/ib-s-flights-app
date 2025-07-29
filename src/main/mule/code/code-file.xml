@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<!-- [STUDIO:"code-fileFlow"]<flow name="code-fileFlow" doc:id="fc7baa90-95ba-4af0-a86f-fe1ef498e5db" >
+		<file:listener doc:name="On New or Updated File" doc:id="db87b443-e645-4c4b-abd5-e96be171ae36" config-ref="File_Config" directory="C:\Users\adero\OneDrive\Escritorio\Proyectos\Ingeniero Binario\Formaciones\curso Mulesoft Developer 2025\CLASE 8 - Procesamiento batch y sincronización de datos\Ejemplos\Files\new" recursive="false" overwrite="true" moveToDirectory="C:\Users\adero\OneDrive\Escritorio\Proyectos\Ingeniero Binario\Formaciones\curso Mulesoft Developer 2025\CLASE 8 - Procesamiento batch y sincronización de datos\Ejemplos\Files\processed">
+			<scheduling-strategy >
+				<fixed-frequency frequency="2" timeUnit="MINUTES" startDelay="1"/>
+			</scheduling-strategy>
+		</file:listener>
+		<logger level="INFO" doc:name="list processed flights" doc:id="ae47317f-0fa0-4fa1-8b44-6398c5ebd11d" message='#[%dw 2.0&#10;output application/json&#10;&#45;&#45;-&#10;{&#10;	message: "list processed flights",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	}	&#10;}&#93;' />
+	</flow> [STUDIO] -->
+</mule>

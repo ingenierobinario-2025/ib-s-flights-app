@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/current/mule-ftp.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+	<!-- [STUDIO:"code-schedulerFlow"]<flow name="code-schedulerFlow" doc:id="550f8845-3695-4c9c-9c02-a61c06946651" >
+		<scheduler doc:name="Scheduler" doc:id="21e222ca-473b-4532-abde-84edbdcaa292" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="2" startDelay="1" timeUnit="MINUTES" />
+			</scheduling-strategy>
+		</scheduler>
+	</flow> [STUDIO] -->
+</mule>

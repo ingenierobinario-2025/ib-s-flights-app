@@ -1,0 +1,7 @@
+%dw 2.0
+
+type auto_e02ad1eb_d513_4fc8_bf88_12486534cbe9_Output_Variables_varInitialData = {|
+  correlationId: String, 
+  source: String | Null
+|}
+

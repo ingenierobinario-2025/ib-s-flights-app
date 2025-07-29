@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	
+	<flow name="get:\flights:american-flights-api-config">
+		<ee:transform doc:name="varInitialData" doc:id="dacafd62-e4ae-45d2-83a8-068eeae821d0" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="varInitialData.dwl" variableName="varInitialData" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="START - Get flights by filters" doc:id="f636455a-719a-4882-80f7-0ae60e9db7b5" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "START - Get flights by filters",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	}	&#10;}]' />
+		<try doc:name="Try" doc:id="a92ccb56-7d9c-4df7-bd52-f80fd769a655">
+			<db:select doc:name="Select" doc:id="fb162018-28c6-49c3-9ec9-f6554631eb40" config-ref="Database_Config" target="flightsResponse">
+			<db:sql><![CDATA[SELECT * FROM american WHERE toAirport =:destination]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"destination": vars.varInitialData.destination 
+}]]]></db:input-parameters>
+		</db:select>
+			<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7d94f70c-8afe-42d9-a3ac-802ca77ba1c9" type="DB:BAD_SQL_SYNTAX">
+					<logger level="ERROR" doc:name="Error trying to execute event - component level" doc:id="2de05a8f-7108-4e59-ab0e-eb362db7a623" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "Error trying to execute event - component level",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	},&#10;	error: error&#10;		&#10;}]' />
+					<ee:transform doc:name="error response" doc:id="b28bb09b-a635-47d0-be43-fbffdf3bac66">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Error trying to execute event - component level",
+	httpStatus: 500,
+	correlationId: vars.varInitialData.correlationId,
+	source: vars.varInitialData.source,
+	
+	error: {
+		description: error.description,
+		namespace: error.errorType.namespace,
+		identifier: error.errorType.identifier
+	}
+		
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bd76ce4b-d0b7-42fc-9013-5ef0f00e69ec" type="DB:CONNECTIVITY">
+					<logger level="ERROR" doc:name="Error trying to execute event - component level" doc:id="7e3b21e8-6119-4508-a012-e8eead49c5b1" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "Error trying to execute event - component level",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	},&#10;	error: error&#10;		&#10;}]' />
+					<ee:transform doc:name="error response" doc:id="a59253ec-174c-4341-a569-403597185e7d">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Error trying to execute event - component level",
+	httpStatus: 500,
+	correlationId: vars.varInitialData.correlationId,
+	source: vars.varInitialData.source,
+	
+	error: {
+		description: error.description,
+		namespace: error.errorType.namespace,
+		identifier: error.errorType.identifier
+	}
+		
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<!-- [STUDIO:"Is not null"]<validation:is-not-null doc:name="Is not null" doc:id="f13c7743-8d2e-4807-a74a-a4122a399c70" config-ref="Validation_Config" value="#[vars.flightsResponse&#93;" message="Query results - no data"/> [STUDIO] -->
+		<!-- [STUDIO:"Is null"]<validation:is-null doc:name="Is null" doc:id="033fc01b-80c2-4024-90d6-910bb19bb6d5" config-ref="Validation_Config" value="#[vars.flightsResponse&#93;" message="Query results - no data"/> [STUDIO] -->
+		<scatter-gather doc:name="Scatter-Gather" doc:id="7bae0e68-424e-43c2-aa1c-72aacff7dae7" >
+			<route >
+				<flow-ref doc:name="subflow\soap\get\country\currency" doc:id="b6e88700-278a-47a4-a2c8-d4e91ebd699c" name="subflow\soap\get\country\currency" />
+			</route>
+			<route >
+				<flow-ref doc:name="subflow\get\weather" doc:id="edc7b0a8-ec74-4e45-a179-7f316b2ba603" name="subflow\get\weather" />
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="flights response" doc:id="d531b286-8cbd-4aad-9b83-2472a486bf6a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://www.oorsprong.org/websamples.countryinfo
+---
+vars.flightsResponse map ( payload01 , indexOfPayload01 ) -> {
+	plane: {
+		"type": payload01.planeType,
+		totalSeats: payload01.totalSeats
+	},
+	code: payload01.code1,
+	price: payload01.price default 0,
+	origin: payload01.fromAirport default "",
+	destination: payload01.toAirport default "",
+	ID: payload01.ID,
+	departureDate: payload01.takeOffDate as String default "",
+	emptySeats: payload01.seatsAvailable default 0,
+	weather: payload[1].payload,
+	currency: payload[0].payload.body.ns0#CountryCurrencyResponse.ns0#CountryCurrencyResult.ns0#sISOCode default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="END - Get flights by filters" doc:id="f021d33f-2c6c-45a0-a8f5-898041fd68d7" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "END - Get flights by filters",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	}	&#10;}]' />
+		<error-handler >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0250b781-d855-44c8-bbce-b446d9aa16c8" type="VALIDATION:NOT_NULL" >
+				<logger level="ERROR" doc:name="Error trying to execute event - flow level - validation is not null" doc:id="6b4c2893-6100-47dc-8d28-d1aa5dc8fbc2" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "Error trying to execute event - flow level - validation is not null",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	},&#10;	error: error&#10;		&#10;}]' />
+				<ee:transform doc:name="error response" doc:id="8d33b6c5-8639-4ed5-aadc-b2533f3119f3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Error trying to execute event - flow level - validation is not null",
+	correlationId: vars.varInitialData.correlationId,
+	source: vars.varInitialData.source,
+	error: {
+		description: error.description,
+		namespace: error.errorType.namespace,
+		identifier: error.errorType.identifier
+	}
+		
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2d5f2f6d-ed62-45d3-864f-561ad4528e04" type="ANY">
+				<logger level="ERROR" doc:name="Error trying to execute event - flow level" doc:id="3ceb8c04-adaf-4760-b06c-869f1ca06c72" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "Error trying to execute event - flow level - on error continue",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	},&#10;	error: error&#10;		&#10;}]' />
+				<ee:transform doc:name="error response" doc:id="95104630-94f0-487f-9af8-cb77eef293f6">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Error trying to execute event - flow level - on error continue",
+	httpStatus: 500,
+	correlationId: vars.varInitialData.correlationId,
+	source: vars.varInitialData.source,
+	
+	error: {
+		description: error.description,
+		namespace: error.errorType.namespace,
+		identifier: error.errorType.identifier
+	}
+		
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6df5e820-deeb-43e4-9230-7d38804eb036" type="DB:CONNECTIVITY" >
+				<logger level="ERROR" doc:name="Error trying to execute event - flow level" doc:id="645a11b5-6d2c-48c0-b34b-3de1241b6cbd" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "Error trying to execute event - flow level",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	},&#10;	error: error&#10;		&#10;}]' />
+				<ee:transform doc:name="error response" doc:id="27550f61-40af-40b8-bd12-dbf41f6aaa96" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Error trying to execute event - flow level",
+	httpStatus: 500,
+	correlationId: vars.varInitialData.correlationId,
+	source: vars.varInitialData.source,
+	
+	error: {
+		description: error.description,
+		namespace: error.errorType.namespace,
+		identifier: error.errorType.identifier
+	}
+		
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			
+
+		</error-handler>
+    
+</flow>
+	<flow name="get:\flights\(ID):american-flights-api-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="ID">attributes.uriParams.'ID'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  ID: 1,
+  code: "GQ574",
+  price: 399,
+  departureDate: "2016/12/20",
+  origin: "ORD",
+  destination: "SFO",
+  emptySeats: 200,
+  plane: {
+    "type": "Boeing 747",
+    totalSeats: 400
+  }
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    
+</flow>
+    <flow name="flow\listener\vm\queue" doc:id="817a6949-ee00-44a2-af44-d08264c72470" >
+		<vm:listener doc:name="Listener" doc:id="546a7f8d-0bd1-4df9-a0a0-9add552a14a7" config-ref="VM_Config" queueName="currencyFlight"/>
+		<!-- [STUDIO:"Insert"]<db:insert doc:name="Insert" doc:id="2d440015-0411-4f8f-9dda-ace47236fdb2" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO american (code01, price, takeOffDate, fromAirport, toAirport, seatsAvailable, planeType, totalSeats)
+VALUE (:code, :price, :departureDate, :origin, :destination, :emptySeats, :type, :totalSeats)&#93;&#93;></db:sql>
+			<db:input-parameters ><![CDATA[#[output application/java
+&#45;&#45;-
+{
+	code: payload.code,
+	price: payload.price,
+	departureDate: payload.departureDate,
+	origin: payload.origin,
+	destination: payload.destination,
+	emptySeats: payload.emptySeats,
+	"type": payload.plane.'type',
+	totalSeats: payload.plane.totalSeats,
+	currency: payload.currency
+}&#93;&#93;&#93;></db:input-parameters>
+		</db:insert> [STUDIO] -->
+		<logger level="INFO" doc:name="SIMULATION - Insert flight" doc:id="31df7b82-7ce3-42b6-ad62-ac5fc3d5f2c5" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "SIMULATION - Insert flight",&#10;	content: {&#10;		payload: payload&#10;	}	&#10;}]' />
+	</flow>
+	<flow name="post:\flights:application\json:american-flights-api-config">
+        <ee:transform doc:name="varInitialData" doc:id="420b1c07-e579-43f6-83e2-9108e00ea3c1">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="varInitialData"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	correlationId: attributes.headers."x-correlation-id",
+	source: attributes.headers."x-source-system"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="START - Post flights" doc:id="1bd573d7-8062-451b-aba2-585bff6b4d0d" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "START - Post flights",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	}	&#10;}]' />
+		<flow-ref doc:name="subflow\soap\get\country\currency" doc:id="cc0d156a-2206-4374-8652-885876688b86" name="subflow\soap\get\country\currency"/>
+		<ee:transform doc:name="body insert DB" doc:id="444c773e-fe0a-4e3d-80ea-00793185cc40">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://www.oorsprong.org/websamples.countryinfo
+---
+{
+	code: payload.code,
+	price: payload.price,
+	departureDate: payload.departureDate,
+	origin: payload.origin,
+	destination: payload.destination,
+	emptySeats: payload.emptySeats,
+	plane: {
+		"type": payload.plane."type" default "",
+		totalSeats: payload.plane.totalSeats default 0
+	},
+	currency: vars.soapResponse.body.ns0#CountryCurrencyResponse.ns0#CountryCurrencyResult.ns0#sISOCode default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<vm:publish queueName="currencyFlight" doc:name="Publish" doc:id="9e550737-f221-4ad7-bccd-8e2d15aa63bc" config-ref="VM_Config">
+		</vm:publish>
+		<logger level="INFO" doc:name="END - Post flights" doc:id="cf5e555a-0c75-4bef-a98f-2d10786a5931" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "END - Post flights",&#10;	content: {&#10;		payload: payload,&#10;		vars: vars,&#10;		attributes: attributes&#10;	}	&#10;}]' />
+    
+</flow>
+	<flow name="privateFlowWeather" doc:id="60c1f0c4-c945-4320-a4cc-6212cb3d0950" >
+		<http:request method="GET" doc:name="Request weather API" doc:id="e18cda3d-d373-4a58-b325-5a15bd3b866a" url="https://aviationweather.gov/api/data/metar" >
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"ids" : "K" ++ payload,
+	"format": "json"
+}]]]></http:query-params>
+		</http:request>
+	</flow>
+	
+	
+	
+	
+</mule>
